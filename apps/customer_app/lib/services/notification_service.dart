@@ -27,7 +27,6 @@ class NotificationService {
       'إشعارات الطلبات',
       description: 'إشعارات الطلبات والشحنات',
       importance: Importance.high,
-      priority: Priority.high,
     );
     await _plugin
         .resolvePlatformSpecificImplementation<
@@ -46,7 +45,6 @@ class NotificationService {
       'إشعارات الطلبات',
       channelDescription: 'إشعارات الطلبات والشحنات',
       importance: Importance.high,
-      priority: Priority.high,
     );
     const iosDetails = DarwinNotificationDetails();
     const details = NotificationDetails(

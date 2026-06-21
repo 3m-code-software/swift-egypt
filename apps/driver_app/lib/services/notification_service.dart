@@ -28,7 +28,6 @@ class NotificationService {
           'مهام التوصيل',
           description: 'إشعارات المهام والتوصيل',
           importance: Importance.high,
-          priority: Priority.high,
         ),
       );
     }
@@ -45,7 +44,6 @@ class NotificationService {
       'مهام التوصيل',
       channelDescription: 'إشعارات المهام والتوصيل',
       importance: Importance.high,
-      priority: Priority.high,
     );
     const iosDetails = DarwinNotificationDetails();
     const details = NotificationDetails(
