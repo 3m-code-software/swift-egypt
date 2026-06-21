@@ -1,5 +1,6 @@
 name: swift_egypt_monorepo
 description: Swift Egypt Shipping & Logistics Platform
+version: 1.0.0
 publish_to: none
 environment:
   sdk: ^3.11.1
