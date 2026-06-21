@@ -38,19 +38,27 @@ class NotificationService {
     required String title,
     required String body,
     String? payload,
+    bool ongoing = false,
   }) async {
-    const androidDetails = AndroidNotificationDetails(
+    final androidDetails = AndroidNotificationDetails(
       'swift_driver_channel',
       'مهام التوصيل',
       channelDescription: 'إشعارات المهام والتوصيل',
       importance: Importance.high,
+      priority: Priority.high,
+      ongoing: ongoing,
+      autoCancel: !ongoing,
     );
     const iosDetails = DarwinNotificationDetails();
-    const details = NotificationDetails(
+    final details = NotificationDetails(
       android: androidDetails,
       iOS: iosDetails,
     );
     await _plugin.show(id, title, body, details, payload: payload);
+  }
+
+  Future<void> cancelNotification(int id) async {
+    await _plugin.cancel(id);
   }
 
   Future<void> showTaskAssigned(String orderId, String customerName) async {

@@ -13,17 +13,13 @@ class LocationService {
   static const Duration _minInterval = Duration(seconds: 120);
 
   static Future<void> initialize() async {
-    await _requestPermissions();
-  }
-
-  static Future<bool> _requestPermissions() async {
-    final location = await Permission.location.request();
-    final background = await Permission.locationAlways.request();
-    return location.isGranted && background.isGranted;
   }
 
   static Future<bool> requestLocationPermission() async {
     final status = await Permission.location.request();
+    if (status.isGranted) {
+      await Permission.locationAlways.request();
+    }
     return status.isGranted;
   }
 
