@@ -12,7 +12,6 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
-  String _sortBy = 'time';
   String _filterBy = 'all';
 
   @override
@@ -28,14 +27,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
       tasks = taskProvider.completedTasks;
     }
 
-    if (_sortBy == 'priority') {
-      tasks = List.from(tasks)
-        ..sort((a, b) => b.estimatedPrice?.compareTo(a.estimatedPrice ?? 0) ?? 0);
-    } else {
-      tasks = List.from(tasks)
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('المهام اليومية'),
@@ -44,36 +35,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
             icon: const Icon(Icons.filter_list),
             onSelected: (v) => setState(() => _filterBy = v),
             itemBuilder: (_) => [
-              const PopupMenuItem(
-                value: 'all',
-                child: Text('الكل'),
-              ),
-              const PopupMenuItem(
-                value: 'pending',
-                child: Text('معلقة'),
-              ),
-              const PopupMenuItem(
-                value: 'in_progress',
-                child: Text('قيد التنفيذ'),
-              ),
-              const PopupMenuItem(
-                value: 'completed',
-                child: Text('مكتملة'),
-              ),
-            ],
-          ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.sort),
-            onSelected: (v) => setState(() => _sortBy = v),
-            itemBuilder: (_) => [
-              const PopupMenuItem(
-                value: 'time',
-                child: Text('حسب الوقت'),
-              ),
-              const PopupMenuItem(
-                value: 'priority',
-                child: Text('حسب الأولوية'),
-              ),
+              const PopupMenuItem(value: 'all', child: Text('الكل')),
+              const PopupMenuItem(value: 'pending', child: Text('معلقة')),
+              const PopupMenuItem(value: 'in_progress', child: Text('قيد التنفيذ')),
+              const PopupMenuItem(value: 'completed', child: Text('مكتملة')),
             ],
           ),
         ],
@@ -101,7 +66,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       }
                       final task = tasks[index - 1];
                       return TaskCard(
-                        shipment: task,
+                        order: task,
                         onTap: () {
                           Navigator.of(context).pushNamed(
                             '/task/detail',
@@ -120,24 +85,16 @@ class _TaskListScreenState extends State<TaskListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.inbox_rounded,
-            size: 80,
-            color: Colors.grey.shade300,
-          ),
+          Icon(Icons.inbox_rounded, size: 80, color: Colors.grey.shade300),
           const SizedBox(height: 16),
           Text(
             'لا توجد مهام اليوم',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.grey,
-                ),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 8),
           Text(
             'سيتم عرض مهامك هنا عند توفرها',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
           ),
         ],
       ),

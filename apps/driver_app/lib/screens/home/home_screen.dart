@@ -32,6 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TaskProvider>().loadTodayTasks();
+      context.read<TaskProvider>().loadStats();
     });
     LocationService.startBackgroundUpdates();
   }
@@ -49,22 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'الرئيسية',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment_rounded),
-            label: 'المهام',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_rounded),
-            label: 'النشاط',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_rounded),
-            label: 'الملف الشخصي',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'الرئيسية'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment_rounded), label: 'المهام'),
+          BottomNavigationBarItem(icon: Icon(Icons.history_rounded), label: 'النشاط'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_rounded), label: 'الملف الشخصي'),
         ],
       ),
     );
@@ -80,9 +69,14 @@ class _HomeTab extends StatelessWidget {
     final taskProvider = context.watch<TaskProvider>();
     final syncProvider = context.watch<SyncProvider>();
     final driverName = auth.user?.fullName ?? 'السائق';
+    final stats = taskProvider.stats;
+    final batchIds = taskProvider.tasks.map((t) => t.batchId).toSet().toList();
 
     return RefreshIndicator(
-      onRefresh: () => taskProvider.loadTodayTasks(),
+      onRefresh: () async {
+        await taskProvider.loadTodayTasks();
+        await taskProvider.loadStats();
+      },
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
@@ -111,14 +105,9 @@ class _HomeTab extends StatelessWidget {
                     children: [
                       Text(
                         'مرحباً بك،',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
                       ),
-                      Text(
-                        driverName,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
+                      Text(driverName, style: Theme.of(context).textTheme.titleLarge),
                     ],
                   ),
                 ),
@@ -140,10 +129,7 @@ class _HomeTab extends StatelessWidget {
                                 color: AppTheme.warningOrange,
                               ),
                             )
-                          : const Icon(
-                              Icons.sync,
-                              color: AppTheme.warningOrange,
-                            ),
+                          : const Icon(Icons.sync, color: AppTheme.warningOrange),
                     ),
                   ),
               ],
@@ -153,78 +139,86 @@ class _HomeTab extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(
-                  child: _StatCard(
-                    label: 'المهام المكتملة',
-                    value: '${taskProvider.completedCount}',
-                    icon: Icons.check_circle_rounded,
-                    color: AppTheme.accentGreen,
-                  ),
-                ),
+                Expanded(child: _StatCard(
+                  label: 'تم التوصيل',
+                  value: '${stats['delivered'] ?? 0}',
+                  icon: Icons.check_circle_rounded,
+                  color: AppTheme.accentGreen,
+                )),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _StatCard(
-                    label: 'المهام المعلقة',
-                    value: '${taskProvider.pendingCount}',
-                    icon: Icons.pending_actions_rounded,
-                    color: AppTheme.warningOrange,
-                  ),
-                ),
+                Expanded(child: _StatCard(
+                  label: 'معلق',
+                  value: '${stats['pending'] ?? 0}',
+                  icon: Icons.pending_actions_rounded,
+                  color: AppTheme.warningOrange,
+                )),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(
-                  child: _StatCard(
-                    label: 'إجمالي المهام',
-                    value: '${taskProvider.totalCount}',
-                    icon: Icons.assignment_rounded,
-                    color: AppTheme.primaryBlue,
-                  ),
-                ),
+                Expanded(child: _StatCard(
+                  label: 'مرتجع',
+                  value: '${stats['returned'] ?? 0}',
+                  icon: Icons.replay_rounded,
+                  color: AppTheme.errorRed,
+                )),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _StatCard(
-                    label: 'قيد التنفيذ',
-                    value: '${taskProvider.inProgressTasks.length}',
-                    icon: Icons.directions_car_rounded,
-                    color: AppTheme.primaryLight,
-                  ),
-                ),
+                Expanded(child: _StatCard(
+                  label: 'لا رد',
+                  value: '${stats['no_answer'] ?? 0}',
+                  icon: Icons.phone_missed_rounded,
+                  color: Colors.grey,
+                )),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _StatCard(
+                  label: 'توصيل جزئي',
+                  value: '${stats['partial'] ?? 0}',
+                  icon: Icons.remove_circle_outline_rounded,
+                  color: AppTheme.primaryLight,
+                )),
+                const SizedBox(width: 12),
+                Expanded(child: _StatCard(
+                  label: 'إجمالي',
+                  value: '${stats['total'] ?? 0}',
+                  icon: Icons.assignment_rounded,
+                  color: AppTheme.primaryBlue,
+                )),
               ],
             ),
             const SizedBox(height: 24),
-            Text(
-              'إجراءات سريعة',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text('إجراءات سريعة', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.assignment_rounded,
-                    label: 'عرض المهام',
-                    color: AppTheme.primaryBlue,
-                    onTap: () {
-                      Navigator.of(context).pushNamed('/tasks');
-                    },
-                  ),
-                ),
+                Expanded(child: _QuickActionCard(
+                  icon: Icons.assignment_rounded,
+                  label: 'عرض المهام',
+                  color: AppTheme.primaryBlue,
+                  onTap: () => Navigator.of(context).pushNamed('/tasks'),
+                )),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _QuickActionCard(
-                    icon: Icons.person_pin_rounded,
-                    label: 'الملف الشخصي',
-                    color: AppTheme.accentGreen,
-                    onTap: () {
-                      Navigator.of(context).pushNamed('/profile');
-                    },
-                  ),
-                ),
+                Expanded(child: _QuickActionCard(
+                  icon: Icons.person_pin_rounded,
+                  label: 'الملف الشخصي',
+                  color: AppTheme.accentGreen,
+                  onTap: () => Navigator.of(context).pushNamed('/profile'),
+                )),
               ],
             ),
+            if (batchIds.length == 1) ...[
+              const SizedBox(height: 12),
+              _QuickActionCard(
+                icon: Icons.today_rounded,
+                label: 'إنهاء اليوم',
+                color: AppTheme.warningOrange,
+                onTap: () => _confirmEndOfDay(context, batchIds.first),
+              ),
+            ],
             const SizedBox(height: 24),
             if (taskProvider.isLoading)
               const Center(
@@ -246,6 +240,34 @@ class _HomeTab extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmEndOfDay(BuildContext context, String batchId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('إنهاء اليوم'),
+        content: const Text(
+          'سيتم تحويل جميع الطلبات المعلقة إلى مرتجعة. هل أنت متأكد؟',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('إلغاء'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context.read<TaskProvider>().submitEndOfDay(batchId);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.warningOrange,
+            ),
+            child: const Text('تأكيد إنهاء اليوم'),
+          ),
+        ],
       ),
     );
   }
@@ -282,11 +304,9 @@ class _StatCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
+            Text(label,
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center),
           ],
         ),
       ),
@@ -319,11 +339,9 @@ class _QuickActionCard extends StatelessWidget {
             children: [
               Icon(icon, color: color, size: 40),
               const SizedBox(height: 8),
-              Text(
-                label,
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
+              Text(label,
+                  style: Theme.of(context).textTheme.titleMedium,
+                  textAlign: TextAlign.center),
             ],
           ),
         ),

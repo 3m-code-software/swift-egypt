@@ -1,11 +1,13 @@
 library swift_egypt_shared;
 
+export 'src/enums/order_status.dart';
 export 'src/enums/shipment_status.dart';
 export 'src/enums/service_type.dart';
 export 'src/enums/user_role.dart';
 export 'src/enums/document_type.dart';
 export 'src/enums/payment_status.dart';
 export 'src/enums/tracking_event_type.dart';
+export 'src/models/batch_order.dart';
 export 'src/models/user.dart';
 export 'src/models/shipment.dart';
 export 'src/models/tracking_event.dart';

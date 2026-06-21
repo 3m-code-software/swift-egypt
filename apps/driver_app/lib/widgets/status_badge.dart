@@ -3,27 +3,23 @@ import 'package:swift_egypt_shared/swift_egypt_shared.dart';
 import '../core/theme.dart';
 
 class StatusBadge extends StatelessWidget {
-  final ShipmentStatus status;
+  final OrderStatus status;
   final bool small;
 
   const StatusBadge({super.key, required this.status, this.small = false});
 
   Color get _color {
     switch (status) {
-      case ShipmentStatus.delivered:
+      case OrderStatus.delivered:
         return AppTheme.accentGreen;
-      case ShipmentStatus.outForDelivery:
-      case ShipmentStatus.pickedUp:
-        return AppTheme.primaryBlue;
-      case ShipmentStatus.confirmed:
-      case ShipmentStatus.inTransit:
+      case OrderStatus.partial:
         return AppTheme.warningOrange;
-      case ShipmentStatus.cancelled:
-      case ShipmentStatus.returned:
+      case OrderStatus.returned:
+      case OrderStatus.noAnswer:
         return AppTheme.errorRed;
-      case ShipmentStatus.onHold:
-        return Colors.grey;
-      default:
+      case OrderStatus.approved:
+        return AppTheme.primaryBlue;
+      case OrderStatus.pending:
         return Colors.grey;
     }
   }

@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:swift_egypt_shared/swift_egypt_shared.dart';
-import 'package:intl/intl.dart';
 import '../core/theme.dart';
 import 'status_badge.dart';
 
 class TaskCard extends StatelessWidget {
-  final Shipment shipment;
+  final BatchOrder order;
   final VoidCallback? onTap;
 
-  const TaskCard({super.key, required this.shipment, this.onTap});
+  const TaskCard({super.key, required this.order, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final timeSince = DateFormatter.relativeTime(shipment.createdAt);
-
     return Card(
       child: InkWell(
         onTap: onTap,
@@ -26,89 +23,75 @@ class TaskCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    shipment.trackingNumber,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppTheme.primaryBlue,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  Expanded(
+                    child: Text(
+                      order.customerName,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppTheme.primaryBlue,
+                            fontWeight: FontWeight.bold,
+                          ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  StatusBadge(status: shipment.status),
+                  StatusBadge(status: order.status, small: true),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
+              if (order.customerPhone != null)
+                Row(
+                  children: [
+                    const Icon(Icons.phone_rounded, size: 14, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text(
+                      order.customerPhone!,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: AppTheme.primaryBlue,
+                          ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 6),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.accentGreen,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      Container(
-                        width: 2,
-                        height: 24,
-                        color: Colors.grey.shade300,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: AppTheme.errorRed,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 12),
+                  const Icon(Icons.location_on_rounded, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          shipment.pickupAddress,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          shipment.deliveryAddress,
-                          style: Theme.of(context).textTheme.bodyLarge,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                    child: Text(
+                      order.address ?? '---',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.schedule_rounded,
-                          size: 14, color: Colors.grey.shade400),
-                      const SizedBox(width: 4),
-                      Text(
-                        timeSince,
-                        style: Theme.of(context).textTheme.bodySmall,
+                  if (order.productName != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                    ],
-                  ),
-                  if (shipment.estimatedPrice != null)
-                    Text(
-                      '${shipment.estimatedPrice!.toStringAsFixed(0)} ج.م',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppTheme.accentGreen,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      child: Text(
+                        '${order.quantity} × ${order.productName}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.primaryBlue,
+                        ),
+                      ),
                     ),
+                  Text(
+                    '${order.total.toStringAsFixed(0)} ج.م',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppTheme.accentGreen,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
                 ],
               ),
             ],

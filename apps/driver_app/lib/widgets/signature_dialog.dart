@@ -55,7 +55,7 @@ class _SignatureDialogState extends State<SignatureDialog> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              child: SignatureCanvas(
+              child: Signature(
                 controller: _controller,
                 width: double.infinity,
                 height: 200,

@@ -4,27 +4,34 @@ import '../services/api_service.dart';
 import '../services/sync_service.dart';
 
 class TaskProvider extends ChangeNotifier {
-  List<Shipment> _tasks = [];
-  Shipment? _selectedTask;
+  List<BatchOrder> _tasks = [];
+  BatchOrder? _selectedTask;
+  Map<String, int> _stats = {};
   bool _isLoading = false;
   String? _error;
 
-  List<Shipment> get tasks => _tasks;
-  Shipment? get selectedTask => _selectedTask;
+  List<BatchOrder> get tasks => _tasks;
+  BatchOrder? get selectedTask => _selectedTask;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  Map<String, int> get stats => _stats;
 
-  List<Shipment> get pendingTasks =>
-      _tasks.where((t) => t.status == ShipmentStatus.confirmed).toList();
+  List<BatchOrder> get pendingTasks =>
+      _tasks.where((t) => t.status == OrderStatus.pending).toList();
 
-  List<Shipment> get inProgressTasks => _tasks
+  List<BatchOrder> get inProgressTasks =>
+      _tasks.where((t) => t.status == OrderStatus.approved).toList();
+
+  List<BatchOrder> get completedTasks => _tasks
       .where((t) =>
-          t.status == ShipmentStatus.pickedUp ||
-          t.status == ShipmentStatus.outForDelivery)
+          t.status == OrderStatus.delivered ||
+          t.status == OrderStatus.partial ||
+          t.status == OrderStatus.returned ||
+          t.status == OrderStatus.noAnswer)
       .toList();
 
-  List<Shipment> get completedTasks =>
-      _tasks.where((t) => t.status == ShipmentStatus.delivered).toList();
+  List<BatchOrder> get deliveryTasks =>
+      _tasks.where((t) => t.status == OrderStatus.pending).toList();
 
   int get totalCount => _tasks.length;
   int get completedCount => completedTasks.length;
@@ -36,14 +43,14 @@ class TaskProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiService.get('/drivers/tasks/today');
-      final data = response['data'];
+      final response = await ApiService.get('/agent/tasks');
+      final data = response['data'] ?? response;
       final list = data is List
           ? data
               .map((e) =>
-                  Shipment.fromJson(e as Map<String, dynamic>))
+                  BatchOrder.fromJson(e as Map<String, dynamic>))
               .toList()
-          : <Shipment>[];
+          : <BatchOrder>[];
       _tasks = list;
     } on ApiError catch (e) {
       _error = e.message;
@@ -55,22 +62,45 @@ class TaskProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> loadTaskDetail(String shipmentId) async {
+  Future<void> loadTaskDetail(String orderId) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await ApiService.get('/shipments/$shipmentId');
-      _selectedTask = Shipment.fromJson(response);
+      final existing = _tasks.where((t) => t.id == orderId).toList();
+      if (existing.isNotEmpty) {
+        _selectedTask = existing.first;
+      } else {
+        final response = await ApiService.get('/agent/tasks');
+        final data = response['data'] ?? response;
+        final orders = data is List
+            ? data
+                .map((e) =>
+                    BatchOrder.fromJson(e as Map<String, dynamic>))
+                .toList()
+            : <BatchOrder>[];
+        _selectedTask = orders.where((t) => t.id == orderId).firstOrNull;
+      }
     } on ApiError catch (e) {
       _error = e.message;
     } catch (e) {
-      _error = 'حدث خطأ في تحميل تفاصيل الشحنة';
+      _error = 'حدث خطأ في تحميل تفاصيل الطلب';
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> loadStats() async {
+    try {
+      final response = await ApiService.get('/agent/tasks/stats');
+      final data = response['data'] ?? response;
+      if (data is Map) {
+        _stats = data.map((k, v) => MapEntry(k.toString(), (v as num?)?.toInt() ?? 0));
+      }
+      notifyListeners();
+    } catch (_) {}
   }
 
   Future<bool> _queueOrCall({
@@ -90,21 +120,33 @@ class TaskProvider extends ChangeNotifier {
   }
 
   Future<bool> updateTaskStatus({
-    required String shipmentId,
+    required String orderId,
     required String status,
-    Map<String, dynamic>? extraData,
+    String? deliveryNotes,
+    String? returnedReason,
+    double? collectedAmount,
+    int? deliveredQuantity,
+    double? latitude,
+    double? longitude,
   }) async {
-    final endpoint = '/drivers/tasks/$shipmentId/status';
-    final body = {
+    final endpoint = '/agent/tasks/$orderId/status';
+    final body = <String, dynamic>{
       'status': status,
-      ...?extraData,
     };
-    if (await _queueOrCall(method: 'POST', endpoint: endpoint, body: body)) {
+    if (deliveryNotes != null) body['delivery_notes'] = deliveryNotes;
+    if (returnedReason != null) body['returned_reason'] = returnedReason;
+    if (collectedAmount != null) body['collected_amount'] = collectedAmount;
+    if (deliveredQuantity != null) body['delivered_quantity'] = deliveredQuantity;
+    if (latitude != null) body['latitude'] = latitude;
+    if (longitude != null) body['longitude'] = longitude;
+
+    if (await _queueOrCall(method: 'PUT', endpoint: endpoint, body: body)) {
       return true;
     }
     try {
-      await ApiService.post(endpoint, body: body);
+      await ApiService.put(endpoint, body: body);
       await loadTodayTasks();
+      await loadStats();
       return true;
     } on ApiError catch (e) {
       _error = e.message;
@@ -117,29 +159,13 @@ class TaskProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> submitProofOfDelivery({
-    required String shipmentId,
-    required String recipientName,
-    String? photoPath,
-    String? signaturePath,
-    double? latitude,
-    double? longitude,
-    String? notes,
-  }) async {
-    final endpoint = '/drivers/tasks/$shipmentId/proof-of-delivery';
-    final body = {
-      'recipient_name': recipientName,
-      'photo_path': photoPath,
-      'signature_path': signaturePath,
-      'latitude': latitude,
-      'longitude': longitude,
-      'notes': notes,
-    };
-    if (await _queueOrCall(method: 'POST', endpoint: endpoint, body: body)) {
+  Future<bool> submitEndOfDay(String batchId) async {
+    final endpoint = '/agent/batches/$batchId/end-day';
+    if (await _queueOrCall(method: 'POST', endpoint: endpoint)) {
       return true;
     }
     try {
-      await ApiService.post(endpoint, body: body);
+      await ApiService.post(endpoint);
       await loadTodayTasks();
       return true;
     } on ApiError catch (e) {
@@ -147,99 +173,9 @@ class TaskProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     } catch (e) {
-      _error = 'حدث خطأ في إرسال إثبات التسليم';
+      _error = 'حدث خطأ في إنهاء اليوم';
       notifyListeners();
       return false;
-    }
-  }
-
-  Future<bool> submitProofOfPickup({
-    required String shipmentId,
-    required int itemCount,
-    String? photoPath,
-    String? signaturePath,
-    String? notes,
-  }) async {
-    final endpoint = '/drivers/tasks/$shipmentId/proof-of-pickup';
-    final body = {
-      'item_count': itemCount,
-      'photo_path': photoPath,
-      'signature_path': signaturePath,
-      'notes': notes,
-    };
-    if (await _queueOrCall(method: 'POST', endpoint: endpoint, body: body)) {
-      return true;
-    }
-    try {
-      await ApiService.post(endpoint, body: body);
-      await loadTodayTasks();
-      return true;
-    } on ApiError catch (e) {
-      _error = e.message;
-      notifyListeners();
-      return false;
-    } catch (e) {
-      _error = 'حدث خطأ في إرسال إثبات الاستلام';
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<bool> submitCollection({
-    required String shipmentId,
-    required double amount,
-    required String paymentMethod,
-  }) async {
-    final endpoint = '/drivers/tasks/$shipmentId/collection';
-    final body = {
-      'amount': amount,
-      'payment_method': paymentMethod,
-    };
-    if (await _queueOrCall(method: 'POST', endpoint: endpoint, body: body)) {
-      return true;
-    }
-    try {
-      await ApiService.post(endpoint, body: body);
-      await loadTodayTasks();
-      return true;
-    } on ApiError catch (e) {
-      _error = e.message;
-      notifyListeners();
-      return false;
-    } catch (e) {
-      _error = 'حدث خطأ في إرسال التحصيل';
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Future<List<Shipment>> getCompletedTasks({
-    DateTime? fromDate,
-    DateTime? toDate,
-    String? search,
-  }) async {
-    try {
-      final queryParams = <String, String>{};
-      if (fromDate != null) queryParams['from'] = fromDate.toIso8601String();
-      if (toDate != null) queryParams['to'] = toDate.toIso8601String();
-      if (search != null && search.isNotEmpty) {
-        queryParams['search'] = search;
-      }
-      final response = await ApiService.get(
-        '/drivers/tasks/completed',
-        queryParams: queryParams.isNotEmpty ? queryParams : null,
-      );
-      final data = response['data'];
-      return data is List
-          ? data
-              .map((e) =>
-                  Shipment.fromJson(e as Map<String, dynamic>))
-              .toList()
-          : <Shipment>[];
-    } catch (e) {
-      _error = 'حدث خطأ في تحميل المهام المكتملة';
-      notifyListeners();
-      return [];
     }
   }
 

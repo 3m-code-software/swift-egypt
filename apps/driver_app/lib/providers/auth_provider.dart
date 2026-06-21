@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:swift_egypt_shared/swift_egypt_shared.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 
 enum AuthStatus { uninitialized, authenticated, unauthenticated, loading }
 

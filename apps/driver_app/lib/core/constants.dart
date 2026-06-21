@@ -15,5 +15,5 @@ class AppConstants {
 
   static const int locationUpdateIntervalSeconds = 120;
   static const int syncRetryIntervalSeconds = 30;
-  static const int mapZoomDefault = 14.0;
+  static const double mapZoomDefault = 14.0;
 }
