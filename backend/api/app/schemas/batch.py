@@ -22,9 +22,13 @@ class BatchOrderResponse(BaseModel):
     delivery_notes: str | None = None
     returned_reason: str | None = None
     collected_amount: float | None = None
+    call_attempts: int = 0
+    delivered_quantity: int | None = None
+    delivery_date: str | None = None
     latitude: float | None = None
     longitude: float | None = None
     assigned_agent_id: str | None = None
+    assigned_at: str | None = None
     created_at: str | None = None
     updated_at: str | None = None
 
@@ -61,6 +65,8 @@ class BatchResponse(BaseModel):
     reviewed_by: str | None = None
     reviewed_at: str | None = None
     file_name: str | None = None
+    delivery_date: str | None = None
+    end_of_day_done: bool = False
     seller_name: str | None = None
     orders: list[BatchOrderResponse] = []
     created_at: str | None = None
@@ -79,6 +85,8 @@ class BatchListResponse(BaseModel):
     commission_percent: float
     seller_name: str | None = None
     file_name: str | None = None
+    delivery_date: str | None = None
+    end_of_day_done: bool = False
     created_at: str | None = None
 
     model_config = {"from_attributes": True}

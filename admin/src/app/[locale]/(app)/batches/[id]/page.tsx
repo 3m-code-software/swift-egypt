@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, RefreshCw, UserCheck } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { get, post } from '@/lib/api'
 import { Button } from '@/components/ui/Button'
@@ -25,6 +25,14 @@ interface BatchOrder {
   total: number
   status: string
   notes: string | null
+  delivery_notes: string | null
+  returned_reason: string | null
+  collected_amount: number
+  call_attempts: number
+  delivered_quantity: number
+  delivery_date: string | null
+  assigned_agent_id: string | null
+  assigned_at: string | null
 }
 
 interface BatchDetail {
@@ -40,6 +48,7 @@ interface BatchDetail {
   file_name: string | null
   orders: BatchOrder[]
   created_at: string | null
+  end_of_day_done: boolean
 }
 
 export default function BatchDetailPage() {
@@ -54,6 +63,10 @@ export default function BatchDetailPage() {
   const [commissionPercent, setCommissionPercent] = useState(0)
   const [rejectReason, setRejectReason] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set())
+  const [agentId, setAgentId] = useState('')
+  const [endOfDayLoading, setEndOfDayLoading] = useState(false)
+  const [assignLoading, setAssignLoading] = useState(false)
 
   const fetchBatch = useCallback(async () => {
     setIsLoading(true)
@@ -98,12 +111,71 @@ export default function BatchDetailPage() {
     }
   }
 
+  const handleEndOfDay = async () => {
+    if (!confirm(t('endOfDayConfirm'))) return
+    setEndOfDayLoading(true)
+    try {
+      await post(`/v1/agent/batches/${id}/end-day`)
+      alert('End of day completed!')
+      fetchBatch()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to complete end of day')
+    } finally {
+      setEndOfDayLoading(false)
+    }
+  }
+
+  const handleAssign = async () => {
+    if (selectedOrders.size === 0 || !agentId.trim()) return
+    setAssignLoading(true)
+    try {
+      await post('/v1/agent/assign', { order_ids: Array.from(selectedOrders), agent_id: agentId.trim() })
+      alert('Orders assigned successfully!')
+      setSelectedOrders(new Set())
+      setAgentId('')
+      fetchBatch()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to assign orders')
+    } finally {
+      setAssignLoading(false)
+    }
+  }
+
+  const toggleSelectAll = () => {
+    if (!batch) return
+    if (selectedOrders.size === batch.orders.length) {
+      setSelectedOrders(new Set())
+    } else {
+      setSelectedOrders(new Set(batch.orders.map(o => o.id)))
+    }
+  }
+
+  const toggleOrder = (orderId: string) => {
+    const next = new Set(selectedOrders)
+    if (next.has(orderId)) {
+      next.delete(orderId)
+    } else {
+      next.add(orderId)
+    }
+    setSelectedOrders(next)
+  }
+
   const statusColors: Record<string, string> = {
     pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
     under_review: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
     approved: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
     rejected: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
   }
+
+  const deliveryStatusColors: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+    delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+    partial: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+    returned: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+    no_answer: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
+  }
+
+  const isApproved = batch?.status === 'approved'
 
   if (isLoading) return <div className="p-8 text-center text-gray-500">{t('common.loading')}</div>
   if (error) return (
@@ -129,6 +201,11 @@ export default function BatchDetailPage() {
         <span className={`ml-auto px-3 py-1 rounded-full text-sm font-medium ${statusColors[batch.status] || ''}`}>
           {t(batch.status)}
         </span>
+        {isApproved && (
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${batch.end_of_day_done ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
+            {batch.end_of_day_done ? t('endOfDayDone') : t('pending')}
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -210,6 +287,42 @@ export default function BatchDetailPage() {
         </Card>
       )}
 
+      {isApproved && !batch.end_of_day_done && (
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">{t('endOfDay')}</h3>
+            <p className="text-sm text-gray-500 mb-4">{t('endOfDayConfirm')}</p>
+            <Button onClick={handleEndOfDay} disabled={endOfDayLoading} variant="destructive">
+              {endOfDayLoading ? t('common.loading') : t('endOfDay')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {isApproved && (
+        <Card>
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold mb-4">{t('assignAgent')}</h3>
+            <div className="flex gap-4 items-end">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('agentId')}</label>
+                <input
+                  type="text"
+                  value={agentId}
+                  onChange={(e) => setAgentId(e.target.value)}
+                  className="w-48 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm"
+                  placeholder={t('agentId')}
+                />
+              </div>
+              <Button onClick={handleAssign} disabled={assignLoading || selectedOrders.size === 0 || !agentId.trim()}>
+                <UserCheck className="w-4 h-4 mr-1" />
+                {assignLoading ? t('common.loading') : t('assign')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardContent className="p-0">
           <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -219,6 +332,17 @@ export default function BatchDetailPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
+                  {isApproved && (
+                    <th className="px-4 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedOrders.size === batch.orders.length && batch.orders.length > 0}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 dark:border-gray-600"
+                        title={t('selectAll')}
+                      />
+                    </th>
+                  )}
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('customerName')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('customerPhone')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('address')}</th>
@@ -226,12 +350,25 @@ export default function BatchDetailPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('quantity')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('price')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('shipping')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('deliveryStatus')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('callAttempts')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('deliveryNotes')}</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('total')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 {batch.orders.map((o) => (
                   <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                    {isApproved && (
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedOrders.has(o.id)}
+                          onChange={() => toggleOrder(o.id)}
+                          className="rounded border-gray-300 dark:border-gray-600"
+                        />
+                      </td>
+                    )}
                     <td className="px-4 py-3 font-medium">{o.customer_name}</td>
                     <td className="px-4 py-3">{o.customer_phone}</td>
                     <td className="px-4 py-3 max-w-[200px] truncate">{o.address}</td>
@@ -239,13 +376,20 @@ export default function BatchDetailPage() {
                     <td className="px-4 py-3">{o.quantity}</td>
                     <td className="px-4 py-3">{o.product_price.toFixed(2)}</td>
                     <td className="px-4 py-3">{o.shipping_cost.toFixed(2)}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${deliveryStatusColors[o.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
+                        {o.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{o.call_attempts ?? 0}</td>
+                    <td className="px-4 py-3 max-w-[150px] truncate">{o.delivery_notes || '—'}</td>
                     <td className="px-4 py-3 font-medium">{o.total.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr className="bg-gray-50 dark:bg-gray-800/50 font-bold">
-                  <td colSpan={7} className="px-4 py-3 text-right">{t('total')}</td>
+                  <td colSpan={isApproved ? 11 : 10} className="px-4 py-3 text-right">{t('total')}</td>
                   <td className="px-4 py-3">{batch.total_amount.toFixed(2)}</td>
                 </tr>
               </tfoot>

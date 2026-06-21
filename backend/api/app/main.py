@@ -13,7 +13,11 @@ from app.ws_manager import manager
 if settings.sentry_dsn:
     sentry_sdk.init(dsn=settings.sentry_dsn, traces_sample_rate=1.0)
 from app.api.v1 import (
+    agent_orders,
     auth,
+    control_room,
+    geocoding,
+    settlements,
     users,
     shipments,
     tracking,
@@ -103,6 +107,10 @@ app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(customers.router, prefix="/api/v1")
 app.include_router(sellers.router, prefix="/api/v1")
 app.include_router(batches.router, prefix="/api/v1")
+app.include_router(agent_orders.router, prefix="/api/v1")
+app.include_router(geocoding.router, prefix="/api/v1")
+app.include_router(settlements.router, prefix="/api/v1")
+app.include_router(control_room.router, prefix="/api/v1")
 app.include_router(ws.router, prefix="/api/v1")
 
 

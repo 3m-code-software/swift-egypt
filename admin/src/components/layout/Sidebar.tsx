@@ -8,7 +8,8 @@ import { useAuth } from '@/hooks/useAuth'
 import {
   LayoutDashboard, Package, Users, Truck, Building2, Car,
   FileText, BarChart3, Headphones, Bell, Settings, Shield, User,
-  ChevronLeft, ChevronRight, X, FolderOpen, Store, ClipboardList
+  ChevronLeft, ChevronRight, X, FolderOpen, Store, ClipboardList,
+  Map, DollarSign
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -41,6 +42,7 @@ const navSections: NavSection[] = [
       { labelKey: 'branches', href: '/branches', icon: <Building2 className="w-5 h-5" /> },
       { labelKey: 'documents', href: '/documents', icon: <FolderOpen className="w-5 h-5" /> },
       { labelKey: 'vehicles', href: '/vehicles', icon: <Car className="w-5 h-5" /> },
+      { labelKey: 'controlRoom', href: '/control-room', icon: <Map className="w-5 h-5" /> },
     ],
     roles: ['admin', 'operations', 'branch_manager'],
   },
@@ -48,6 +50,7 @@ const navSections: NavSection[] = [
     sectionKey: 'finance',
     items: [
       { labelKey: 'invoices', href: '/invoices', icon: <FileText className="w-5 h-5" /> },
+      { labelKey: 'settlements', href: '/settlements', icon: <DollarSign className="w-5 h-5" /> },
       { labelKey: 'reports', href: '/reports', icon: <BarChart3 className="w-5 h-5" /> },
     ],
     roles: ['admin', 'operations', 'finance'],

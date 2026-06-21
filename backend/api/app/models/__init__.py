@@ -16,7 +16,8 @@ from app.models.ai_alert import AiAlert
 from app.models.pricing_rule import PricingRule
 from app.models.notification import Notification
 from app.models.seller import Seller
-from app.models.batch import Batch, BatchOrder, BatchStatus, OrderStatus
+from app.models.batch import Batch, BatchOrder, BatchStatus, OrderStatus, ReturnReason
+from app.models.settlement import SellerSettlement, DriverSettlement, SettlementStatus
 
 __all__ = [
     "User",
@@ -42,4 +43,8 @@ __all__ = [
     "BatchOrder",
     "BatchStatus",
     "OrderStatus",
+    "ReturnReason",
+    "SellerSettlement",
+    "DriverSettlement",
+    "SettlementStatus",
 ]

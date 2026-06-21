@@ -33,6 +33,8 @@ class Batch(Base):
     reviewed_by: Mapped[uuid.UUID | None] = mapped_column(GUID(), ForeignKey("users.id"), nullable=True)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    delivery_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    end_of_day_done: Mapped[bool] = mapped_column(default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -50,6 +52,17 @@ class OrderStatus(str, enum.Enum):
     partial = "partial"
     returned = "returned"
     no_answer = "no_answer"
+
+
+class ReturnReason(str, enum.Enum):
+    customer_refused = "customer_refused"
+    wrong_address = "wrong_address"
+    customer_not_found = "customer_not_found"
+    cancelled_by_seller = "cancelled_by_seller"
+    damaged_product = "damaged_product"
+    wrong_product = "wrong_product"
+    delayed_delivery = "delayed_delivery"
+    other = "other"
 
 
 class BatchOrder(Base):
@@ -74,9 +87,13 @@ class BatchOrder(Base):
     delivery_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     returned_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     collected_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
+    call_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    delivered_quantity: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    delivery_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
     assigned_agent_id: Mapped[uuid.UUID | None] = mapped_column(GUID(), ForeignKey("drivers.id"), nullable=True)
+    assigned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
