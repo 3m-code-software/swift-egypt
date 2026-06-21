@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 480
     refresh_token_expire_days: int = 7
 
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = ""
 
     firebase_credentials: str | None = None
 
