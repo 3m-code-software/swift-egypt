@@ -1,0 +1,21 @@
+name: swift_egypt_shared
+description: Shared models, API client, and utilities for Swift Egypt
+version: 0.1.0
+publish_to: none
+resolution: workspace
+environment:
+  sdk: ^3.11.1
+dependencies:
+  flutter:
+    sdk: flutter
+  json_annotation: ^4.9.0
+  dartz: ^0.10.1
+  freezed_annotation: ^2.4.4
+  intl: ^0.19.0
+  equatable: ^2.0.7
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.12
+  json_serializable: ^6.8.0
+  freezed: ^2.5.7

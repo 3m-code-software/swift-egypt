@@ -1,0 +1,24 @@
+library swift_egypt_shared;
+
+export 'src/enums/shipment_status.dart';
+export 'src/enums/service_type.dart';
+export 'src/enums/user_role.dart';
+export 'src/enums/document_type.dart';
+export 'src/enums/payment_status.dart';
+export 'src/enums/tracking_event_type.dart';
+export 'src/models/user.dart';
+export 'src/models/shipment.dart';
+export 'src/models/tracking_event.dart';
+export 'src/models/driver.dart';
+export 'src/models/branch.dart';
+export 'src/models/vehicle.dart';
+export 'src/models/document.dart';
+export 'src/models/invoice.dart';
+export 'src/models/payment.dart';
+export 'src/models/proof_of_delivery.dart';
+export 'src/models/support_ticket.dart';
+export 'src/models/ai_alert.dart';
+export 'src/api/api_client.dart';
+export 'src/api/api_exception.dart';
+export 'src/utils/validators.dart';
+export 'src/utils/date_formatter.dart';

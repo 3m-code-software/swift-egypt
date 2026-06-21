@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: backend/api/requirements*.txt
+
+      - run: python -m pip install --upgrade pip
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - run: python -m pytest tests/ -v --no-header --tb=short
+
+  admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: admin/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run lint
+        continue-on-error: true
+
+      - run: npm run test
+        continue-on-error: true
+
+      - run: npm run build
+
+  customer_app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/customer_app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: dart pub get
+
+      - run: dart format --set-exit-if-changed .
+        continue-on-error: true
+
+      - run: flutter build apk --debug
+        continue-on-error: true
+
+  driver_app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/driver_app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: dart pub get
+
+      - run: dart format --set-exit-if-changed .
+        continue-on-error: true
+
+      - run: flutter build apk --debug
+        continue-on-error: true

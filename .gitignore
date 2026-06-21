@@ -1,0 +1,50 @@
+# Flutter
+.dart_tool/
+.packages
+build/
+*.iml
+*.lock
+.metadata
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+venv/
+.venv/
+
+# Node
+node_modules/
+.next/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env.local
+.env.production
+
+# Database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Flutter APK
+*.apk
+*.aab
+
+# Python
+.pytest_cache/
+*.egg
+
+# Misc
+*.mp4
+Screenshot*.png

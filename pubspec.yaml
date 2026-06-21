@@ -1,0 +1,9 @@
+name: swift_egypt_monorepo
+description: Swift Egypt Shipping & Logistics Platform
+publish_to: none
+environment:
+  sdk: ^3.11.1
+workspace:
+  - apps/customer_app
+  - apps/driver_app
+  - packages/shared
