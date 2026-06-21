@@ -5,6 +5,7 @@ class User {
   final String? email;
   final String? phone;
   final String? fullName;
+  final String? avatarUrl;
   final UserRole role;
   final String? branchId;
   final bool isActive;
@@ -16,6 +17,7 @@ class User {
     this.email,
     this.phone,
     this.fullName,
+    this.avatarUrl,
     required this.role,
     this.branchId,
     required this.isActive,
@@ -29,6 +31,7 @@ class User {
       email: json['email'] as String?,
       phone: json['phone'] as String?,
       fullName: json['full_name'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
       role: UserRole.fromApi(json['role'] as String),
       branchId: json['branch_id'] as String?,
       isActive: json['is_active'] as bool? ?? true,
@@ -43,6 +46,7 @@ class User {
       'email': email,
       'phone': phone,
       'full_name': fullName,
+      'avatar_url': avatarUrl,
       'role': role.apiValue,
       'branch_id': branchId,
       'is_active': isActive,

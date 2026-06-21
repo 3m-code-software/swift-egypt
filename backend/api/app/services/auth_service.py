@@ -1,3 +1,5 @@
+import secrets
+from datetime import datetime, timedelta, timezone
 from uuid import UUID
 
 from sqlalchemy import select
@@ -12,6 +14,7 @@ from app.core.security import (
     verify_token,
 )
 from app.models.customer import Customer
+from app.models.password_reset import PasswordResetToken
 from app.models.user import User, UserRole
 
 
@@ -107,3 +110,75 @@ class AuthService:
         if not user:
             raise NotFoundException("User not found")
         return user
+
+    async def forgot_password(self, email: str) -> dict:
+        result = await self.db.execute(select(User).where(User.email == email))
+        user = result.scalar_one_or_none()
+        if not user:
+            return {"message": "If the email exists, a reset code has been sent"}
+
+        otp = f"{secrets.randbelow(900000) + 100000}"
+        token = secrets.token_urlsafe(32)
+        expires_at = datetime.now(timezone.utc) + timedelta(minutes=15)
+
+        reset = PasswordResetToken(
+            user_id=user.id,
+            otp=otp,
+            token=token,
+            expires_at=expires_at,
+        )
+        self.db.add(reset)
+        await self.db.flush()
+
+        return {
+            "message": "If the email exists, a reset code has been sent",
+            "otp": otp,
+            "token": token,
+            "expires_at": expires_at.isoformat(),
+        }
+
+    async def verify_reset_otp(self, email: str, otp: str) -> dict:
+        result = await self.db.execute(
+            select(PasswordResetToken)
+            .join(User)
+            .where(
+                User.email == email,
+                PasswordResetToken.otp == otp,
+                PasswordResetToken.is_used == False,
+                PasswordResetToken.expires_at > datetime.now(timezone.utc),
+            )
+            .order_by(PasswordResetToken.created_at.desc())
+        )
+        reset = result.scalar_one_or_none()
+        if not reset:
+            raise BadRequestException("Invalid or expired OTP")
+
+        return {"token": reset.token, "message": "OTP verified"}
+
+    async def reset_password(self, email: str, otp: str, new_password: str) -> None:
+        result = await self.db.execute(
+            select(PasswordResetToken)
+            .join(User)
+            .where(
+                User.email == email,
+                PasswordResetToken.otp == otp,
+                PasswordResetToken.is_used == False,
+                PasswordResetToken.expires_at > datetime.now(timezone.utc),
+            )
+            .order_by(PasswordResetToken.created_at.desc())
+        )
+        reset = result.scalar_one_or_none()
+        if not reset:
+            raise BadRequestException("Invalid or expired OTP")
+
+        if len(new_password) < 6:
+            raise BadRequestException("Password must be at least 6 characters")
+
+        user_result = await self.db.execute(select(User).where(User.id == reset.user_id))
+        user = user_result.scalar_one_or_none()
+        if not user:
+            raise NotFoundException("User not found")
+
+        user.hashed_password = hash_password(new_password)
+        reset.is_used = True
+        await self.db.flush()

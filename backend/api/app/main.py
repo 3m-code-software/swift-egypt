@@ -4,6 +4,7 @@ import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import create_tables
@@ -17,6 +18,7 @@ from app.api.v1 import (
     auth,
     control_room,
     geocoding,
+    payments,
     settlements,
     users,
     shipments,
@@ -81,6 +83,11 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
+import os
+from pathlib import Path
+os.makedirs("uploads/avatars", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -109,6 +116,7 @@ app.include_router(sellers.router, prefix="/api/v1")
 app.include_router(batches.router, prefix="/api/v1")
 app.include_router(agent_orders.router, prefix="/api/v1")
 app.include_router(geocoding.router, prefix="/api/v1")
+app.include_router(payments.router, prefix="/api/v1")
 app.include_router(settlements.router, prefix="/api/v1")
 app.include_router(control_room.router, prefix="/api/v1")
 app.include_router(ws.router, prefix="/api/v1")

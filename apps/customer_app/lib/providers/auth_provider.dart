@@ -113,4 +113,14 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+
+  Future<void> refreshUser() async {
+    try {
+      final response = await _authService.refreshUser();
+      _user = response;
+      notifyListeners();
+    } catch (_) {
+      // Silently fail; user data stays stale
+    }
+  }
 }

@@ -5,6 +5,7 @@ import '../../core/routes.dart';
 import '../../core/constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/locale_provider.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -82,7 +83,12 @@ class ProfileScreen extends StatelessWidget {
                     leading: const Icon(Icons.edit_outlined, color: AppTheme.primaryBlue),
                     title: const Text('تعديل الملف الشخصي'),
                     trailing: const Icon(Icons.chevron_left),
-                    onTap: () {},
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EditProfileScreen(),
+                      ),
+                    ),
                   ),
                   const Divider(height: 1),
                   ListTile(

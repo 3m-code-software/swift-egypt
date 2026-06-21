@@ -57,6 +57,13 @@ class AuthService {
     }
   }
 
+  Future<User> refreshUser() async {
+    final response = await _api.get('/users/me');
+    final user = User.fromJson(response);
+    await _storage.write(key: AppConstants.storageKeyUser, value: jsonEncode(user.toJson()));
+    return user;
+  }
+
   Future<void> logout() async {
     await _storage.delete(key: AppConstants.storageKeyToken);
     await _storage.delete(key: AppConstants.storageKeyUser);

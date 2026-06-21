@@ -53,21 +53,27 @@ async def login(data: LoginRequest, db: AsyncSession = Depends(get_db)):
     )
 
 
-@router.post("/verify-otp")
-async def verify_otp(data: VerifyOtpRequest):
-    """Verify OTP for phone or email verification."""
-    return {"message": "OTP verified successfully"}
-
-
 @router.post("/forgot-password")
-async def forgot_password(data: ForgotPasswordRequest):
-    """Send password reset OTP to email."""
-    return {"message": "If the email exists, a reset code has been sent"}
+async def forgot_password(data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """Generate password reset OTP sent to email."""
+    service = AuthService(db)
+    result = await service.forgot_password(data.email)
+    return result
+
+
+@router.post("/verify-reset-otp")
+async def verify_reset_otp(data: VerifyOtpRequest, db: AsyncSession = Depends(get_db)):
+    """Verify OTP for password reset."""
+    service = AuthService(db)
+    result = await service.verify_reset_otp(data.email, data.otp)
+    return result
 
 
 @router.post("/reset-password")
-async def reset_password(data: ResetPasswordRequest):
+async def reset_password(data: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
     """Reset password using OTP."""
+    service = AuthService(db)
+    await service.reset_password(data.email, data.otp, data.new_password)
     return {"message": "Password reset successfully"}
 
 

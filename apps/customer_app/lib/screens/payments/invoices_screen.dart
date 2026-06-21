@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:swift_egypt_shared/swift_egypt_shared.dart';
+import '../../core/routes.dart';
 import '../../core/theme.dart';
 import '../../providers/shipment_provider.dart';
 import '../../widgets/empty_state.dart';
@@ -107,7 +108,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> {
                                       SizedBox(
                                         width: double.infinity,
                                         child: OutlinedButton.icon(
-                                          onPressed: () {},
+                                          onPressed: () => Navigator.pushNamed(context, AppRoutes.payment, arguments: {'invoice_id': inv.id, 'amount': inv.total}),
                                           icon: const Icon(Icons.payment, size: 18),
                                           label: const Text('دفع'),
                                         ),

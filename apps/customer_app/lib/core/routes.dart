@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../screens/auth/splash_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/splash_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/shipments/create_shipment_screen.dart';
 import '../screens/shipments/shipment_list_screen.dart';
@@ -10,9 +11,12 @@ import '../screens/shipments/shipment_tracking_screen.dart';
 import '../screens/shipments/pricing_calculator_screen.dart';
 import '../screens/documents/documents_screen.dart';
 import '../screens/payments/invoices_screen.dart';
+import '../screens/payments/payment_screen.dart';
+import '../screens/payments/payment_success_screen.dart';
 import '../screens/support/support_screen.dart';
 import '../screens/support/chat_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
+import '../screens/profile/edit_profile_screen.dart';
 import '../screens/profile/profile_screen.dart';
 
 class AppRoutes {
@@ -31,6 +35,10 @@ class AppRoutes {
   static const String chat = '/chat';
   static const String notifications = '/notifications';
   static const String profile = '/profile';
+  static const String editProfile = '/edit-profile';
+  static const String payment = '/payment';
+  static const String paymentSuccess = '/payment-success';
+  static const String forgotPassword = '/forgot-password';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final args = settings.arguments;
@@ -78,6 +86,28 @@ class AppRoutes {
         return _buildRoute(const NotificationsScreen(), settings);
       case profile:
         return _buildRoute(const ProfileScreen(), settings);
+      case editProfile:
+        return _buildRoute(const EditProfileScreen(), settings);
+      case payment:
+        final args = settings.arguments as Map<String, dynamic>;
+        return _buildRoute(
+          PaymentScreen(
+            invoiceId: args['invoice_id'] as String?,
+            amount: (args['amount'] as num).toDouble(),
+          ),
+          settings,
+        );
+      case paymentSuccess:
+        final args = settings.arguments as Map<String, dynamic>;
+        return _buildRoute(
+          PaymentSuccessScreen(
+            transactionId: args['transaction_id'] as String,
+            amount: (args['amount'] as num).toDouble(),
+          ),
+          settings,
+        );
+      case forgotPassword:
+        return _buildRoute(const ForgotPasswordScreen(), settings);
       default:
         return _buildRoute(const SplashScreen(), settings);
     }

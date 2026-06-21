@@ -29,6 +29,7 @@ class UserResponse(BaseModel):
     branch_name: str | None = None
     is_active: bool
     is_verified: bool
+    avatar_url: str | None = None
     created_at: datetime
     updated_at: datetime
 

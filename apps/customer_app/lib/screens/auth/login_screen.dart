@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../core/routes.dart';
 import '../../providers/auth_provider.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -115,14 +116,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: TextButton(
-                      onPressed: () {
-                        final email = _emailController.text.trim();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(email.isNotEmpty
-                              ? 'تم إرسال رابط إعادة التعيين إلى $email'
-                              : 'يرجى إدخال البريد الإلكتروني أولاً')),
-                        );
-                      },
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ForgotPasswordScreen(),
+                        ),
+                      ),
                       child: const Text('نسيت كلمة المرور؟'),
                     ),
                   ),

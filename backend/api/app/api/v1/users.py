@@ -1,4 +1,8 @@
-from fastapi import APIRouter, Depends, status
+import os
+import uuid as uuid_lib
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,6 +12,7 @@ from app.models.branch import Branch
 from app.models.user import User, UserRole
 from app.schemas.user import ChangePasswordRequest, RoleUpdateRequest, UserResponse, UserUpdate
 from app.services.auth_service import AuthService
+from app.config import settings
 from app.utils.pagination import PaginationParams, paginate
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -47,6 +52,29 @@ async def change_password(data: ChangePasswordRequest, current_user: User = Depe
     service = AuthService(db)
     await service.change_password(current_user, data.current_password, data.new_password)
     return {"message": "Password changed successfully"}
+
+
+@router.post("/me/avatar")
+async def upload_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Upload profile avatar image."""
+    ext = Path(file.filename or "avatar.jpg").suffix if file.filename else ".jpg"
+    filename = f"{uuid_lib.uuid4().hex}{ext}"
+    upload_dir = Path("uploads/avatars")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    filepath = upload_dir / filename
+
+    contents = await file.read()
+    filepath.write_bytes(contents)
+
+    avatar_url = f"/uploads/avatars/{filename}"
+    current_user.avatar_url = avatar_url
+    await db.flush()
+
+    return {"avatar_url": avatar_url, "message": "Avatar uploaded successfully"}
 
 
 @router.get("/")

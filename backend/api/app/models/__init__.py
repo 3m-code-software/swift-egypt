@@ -17,6 +17,7 @@ from app.models.pricing_rule import PricingRule
 from app.models.notification import Notification
 from app.models.seller import Seller
 from app.models.batch import Batch, BatchOrder, BatchStatus, OrderStatus, ReturnReason
+from app.models.password_reset import PasswordResetToken
 from app.models.settlement import SellerSettlement, DriverSettlement, SettlementStatus
 
 __all__ = [
@@ -44,6 +45,7 @@ __all__ = [
     "BatchStatus",
     "OrderStatus",
     "ReturnReason",
+    "PasswordResetToken",
     "SellerSettlement",
     "DriverSettlement",
     "SettlementStatus",
