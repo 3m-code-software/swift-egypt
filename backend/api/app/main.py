@@ -29,6 +29,8 @@ from app.api.v1 import (
     reports,
     notifications,
     customers,
+    sellers,
+    batches,
     ws,
 )
 
@@ -99,6 +101,8 @@ app.include_router(ai.router, prefix="/api/v1")
 app.include_router(reports.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(customers.router, prefix="/api/v1")
+app.include_router(sellers.router, prefix="/api/v1")
+app.include_router(batches.router, prefix="/api/v1")
 app.include_router(ws.router, prefix="/api/v1")
 
 

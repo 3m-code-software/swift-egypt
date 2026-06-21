@@ -1,0 +1,9 @@
+name: swift_egypt_workspace
+publish_to: none
+# workspace root
+environment:
+  sdk: ^3.11.1
+workspace:
+  - apps/customer_app
+  - apps/driver_app
+  - packages/shared

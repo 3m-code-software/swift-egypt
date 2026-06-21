@@ -69,3 +69,11 @@ async def get_branch_manager_user(
     if current_user.role not in [UserRole.admin, UserRole.operations, UserRole.branch_manager]:
         raise ForbiddenException("Branch manager privileges required")
     return current_user
+
+
+async def get_seller_user(
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    if current_user.role not in [UserRole.seller, UserRole.admin, UserRole.operations]:
+        raise ForbiddenException("Seller privileges required")
+    return current_user

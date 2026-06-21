@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth'
 import {
   LayoutDashboard, Package, Users, Truck, Building2, Car,
   FileText, BarChart3, Headphones, Bell, Settings, Shield, User,
-  ChevronLeft, ChevronRight, X, FolderOpen
+  ChevronLeft, ChevronRight, X, FolderOpen, Store, ClipboardList
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -34,6 +34,8 @@ const navSections: NavSection[] = [
     sectionKey: 'operations',
     items: [
       { labelKey: 'shipments', href: '/shipments', icon: <Package className="w-5 h-5" /> },
+      { labelKey: 'batches', href: '/batches', icon: <ClipboardList className="w-5 h-5" /> },
+      { labelKey: 'sellers', href: '/sellers', icon: <Store className="w-5 h-5" /> },
       { labelKey: 'customers', href: '/customers', icon: <Users className="w-5 h-5" /> },
       { labelKey: 'drivers', href: '/drivers', icon: <Truck className="w-5 h-5" /> },
       { labelKey: 'branches', href: '/branches', icon: <Building2 className="w-5 h-5" /> },

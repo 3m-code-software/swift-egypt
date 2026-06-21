@@ -15,6 +15,8 @@ from app.models.support_ticket import SupportTicket
 from app.models.ai_alert import AiAlert
 from app.models.pricing_rule import PricingRule
 from app.models.notification import Notification
+from app.models.seller import Seller
+from app.models.batch import Batch, BatchOrder, BatchStatus, OrderStatus
 
 __all__ = [
     "User",
@@ -35,4 +37,9 @@ __all__ = [
     "AiAlert",
     "PricingRule",
     "Notification",
+    "Seller",
+    "Batch",
+    "BatchOrder",
+    "BatchStatus",
+    "OrderStatus",
 ]

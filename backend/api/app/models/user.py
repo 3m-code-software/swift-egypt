@@ -12,6 +12,7 @@ import enum
 
 class UserRole(str, enum.Enum):
     customer = "customer"
+    seller = "seller"
     driver = "driver"
     operations = "operations"
     branch_manager = "branch_manager"
@@ -36,3 +37,4 @@ class User(Base):
 
     customer = relationship("Customer", back_populates="user", uselist=False)
     driver = relationship("Driver", back_populates="user", uselist=False)
+    seller = relationship("Seller", back_populates="user", uselist=False)

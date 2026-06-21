@@ -1,5 +1,6 @@
 enum UserRole {
   customer,
+  seller,
   driver,
   operations,
   branchManager,
@@ -10,6 +11,8 @@ enum UserRole {
     switch (this) {
       case UserRole.customer:
         return 'customer';
+      case UserRole.seller:
+        return 'seller';
       case UserRole.driver:
         return 'driver';
       case UserRole.operations:
@@ -27,6 +30,8 @@ enum UserRole {
     switch (value) {
       case 'customer':
         return UserRole.customer;
+      case 'seller':
+        return UserRole.seller;
       case 'driver':
         return UserRole.driver;
       case 'operations':
@@ -46,6 +51,8 @@ enum UserRole {
     switch (this) {
       case UserRole.customer:
         return 'عميل';
+      case UserRole.seller:
+        return 'بائع';
       case UserRole.driver:
         return 'سائق';
       case UserRole.operations:

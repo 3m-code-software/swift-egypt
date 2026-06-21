@@ -8,6 +8,8 @@ from app.core.security import hash_password
 from app.database import async_session_factory, create_tables
 from app.models.branch import Branch
 from app.models.pricing_rule import PricingRule
+from app.models.seller import Seller
+from app.models.batch import Batch, BatchOrder, BatchStatus, OrderStatus
 from app.models.user import User, UserRole
 from app.models.customer import Customer
 from app.models.driver import Driver
@@ -120,6 +122,29 @@ async def seed():
             c = Customer(user_id=u.id, company_name=company)
             db.add(c)
             customers.append(u)
+
+        # Create seller users and profiles
+        sellers_data = [
+            ("Mostafa Ali", "seller1@swiftegypt.com", "+201003003001", "Mostafa Electronics"),
+            ("Heba Nour", "seller2@swiftegypt.com", "+201003003002", "Heba Fashion House"),
+        ]
+        for name, email, phone, company in sellers_data:
+            u = User(
+                email=email,
+                hashed_password=hash_password("admin123"),
+                full_name=name,
+                phone=phone,
+                role=UserRole.seller,
+                branch_id=branch.id,
+                is_active=True,
+                is_verified=True,
+            )
+            db.add(u)
+            await db.flush()
+            seller = Seller(user_id=u.id, company_name=company)
+            db.add(seller)
+
+        await db.flush()
 
         # Create driver users and profiles
         drivers_data = [
@@ -377,6 +402,7 @@ async def seed():
         print("- Operations: operations@swiftegypt.com / admin123")
         print("- Branch Manager: manager@swiftegypt.com / admin123")
         print("- 4 Customer accounts")
+        print("- 2 Seller accounts")
         print("- 3 Driver accounts")
         print("- 3 Vehicles")
         print("- 2 Branches")

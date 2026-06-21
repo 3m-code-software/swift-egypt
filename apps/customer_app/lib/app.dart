@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'core/theme.dart';
@@ -65,8 +66,9 @@ class _AppConsumer extends StatelessWidget {
           locale: Locale(localeProvider.locale),
           supportedLocales: const [Locale('ar'), Locale('en')],
           localizationsDelegates: const [
-            DefaultMaterialLocalizations.delegate,
-            DefaultWidgetsLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
           ],
           home: const SplashScreen(),
           onGenerateRoute: AppRoutes.generateRoute,
