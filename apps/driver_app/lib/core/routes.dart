@@ -7,6 +7,7 @@ import '../screens/tasks/task_navigation_screen.dart';
 import '../screens/delivery/status_update_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/activity/activity_log_screen.dart';
+import '../screens/ai/ai_chat_screen.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -17,6 +18,7 @@ class AppRoutes {
 
   static const String profile = '/profile';
   static const String activityLog = '/activity';
+  static const String aiChat = '/ai-chat';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -47,6 +49,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case activityLog:
         return MaterialPageRoute(builder: (_) => const ActivityLogScreen());
+      case aiChat:
+        return MaterialPageRoute(builder: (_) => const AiChatScreen());
       default:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
     }

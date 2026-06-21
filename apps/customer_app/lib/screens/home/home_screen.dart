@@ -34,6 +34,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton(
+              onPressed: () =>
+                  Navigator.pushNamed(context, AppRoutes.aiChat),
+              child: const Icon(Icons.auto_awesome),
+            )
+          : null,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
@@ -254,6 +261,14 @@ class _HomeTabState extends State<_HomeTab> {
                           color: AppTheme.accentGreen,
                           onTap: () =>
                               Navigator.pushNamed(context, AppRoutes.pricing),
+                        ),
+                        const SizedBox(width: 12),
+                        _QuickActionCard(
+                          icon: Icons.auto_awesome_rounded,
+                          label: 'Swift AI',
+                          color: const Color(0xFF1565C0),
+                          onTap: () =>
+                              Navigator.pushNamed(context, AppRoutes.aiChat),
                         ),
                       ],
                     ),

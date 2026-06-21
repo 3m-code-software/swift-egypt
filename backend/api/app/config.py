@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     ai_service_url: str = "http://localhost:8001"
     ocr_service_url: str = "http://localhost:8002"
 
+    openrouter_api_key: str = ""
+    openrouter_site_url: str = "https://swift-egypt-production.up.railway.app"
+    openrouter_site_name: str = "Swift Egypt"
+
     sentry_dsn: str | None = None
 
 

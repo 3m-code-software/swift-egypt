@@ -219,6 +219,13 @@ class _HomeTab extends StatelessWidget {
                 onTap: () => _confirmEndOfDay(context, batchIds.first),
               ),
             ],
+            const SizedBox(height: 12),
+            _QuickActionCard(
+              icon: Icons.auto_awesome_rounded,
+              label: 'Swift AI',
+              color: AppTheme.primaryBlue,
+              onTap: () => Navigator.of(context).pushNamed('/ai-chat'),
+            ),
             const SizedBox(height: 24),
             if (taskProvider.isLoading)
               const Center(

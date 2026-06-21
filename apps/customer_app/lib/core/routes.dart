@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/ai/ai_chat_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
@@ -38,6 +39,7 @@ class AppRoutes {
   static const String editProfile = '/edit-profile';
   static const String payment = '/payment';
   static const String paymentSuccess = '/payment-success';
+  static const String aiChat = '/ai-chat';
   static const String forgotPassword = '/forgot-password';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -106,6 +108,8 @@ class AppRoutes {
           ),
           settings,
         );
+      case aiChat:
+        return _buildRoute(const AiChatScreen(), settings);
       case forgotPassword:
         return _buildRoute(const ForgotPasswordScreen(), settings);
       default:
