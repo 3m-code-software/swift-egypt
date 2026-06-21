@@ -26,7 +26,17 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(email, password)
-      router.push(`/${locale}/dashboard`)
+      const userStr = localStorage.getItem('auth_user')
+      if (userStr) {
+        const user = JSON.parse(userStr)
+        if (user.role === 'seller') {
+          router.push(`/${locale}/seller/dashboard`)
+        } else {
+          router.push(`/${locale}/dashboard`)
+        }
+      } else {
+        router.push(`/${locale}/dashboard`)
+      }
     } catch (err: any) {
       setError(err.message || t('invalidCredentials'))
     } finally {

@@ -2,6 +2,8 @@
   "nav": {
     "dashboard": "لوحة التحكم",
     "shipments": "الشحنات",
+    "batches": "الشيتات",
+    "sellers": "البائعون",
     "customers": "العملاء",
     "drivers": "السائقون",
     "branches": "الفروع",
@@ -17,7 +19,15 @@
     "main": "الرئيسية",
     "operations": "العمليات",
     "finance": "المالية",
-    "admin": "إدارة"
+    "admin": "إدارة",
+    "seller": "بوابة البائع"
+  },
+  "sellerNav": {
+    "dashboard": "لوحة التحكم",
+    "myOrders": "طلباتي",
+    "uploadSheet": "رفع شيت",
+    "wallet": "المحفظة",
+    "analytics": "التحليلات"
   },
   "dashboard": {
     "title": "لوحة التحكم",

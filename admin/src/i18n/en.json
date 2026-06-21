@@ -2,6 +2,8 @@
   "nav": {
     "dashboard": "Dashboard",
     "shipments": "Shipments",
+    "batches": "Batches",
+    "sellers": "Sellers",
     "customers": "Customers",
     "drivers": "Drivers",
     "branches": "Branches",
@@ -17,7 +19,15 @@
     "main": "Main",
     "operations": "Operations",
     "finance": "Finance",
-    "admin": "Administration"
+    "admin": "Administration",
+    "seller": "Seller Portal"
+  },
+  "sellerNav": {
+    "dashboard": "Dashboard",
+    "myOrders": "My Orders",
+    "uploadSheet": "Upload Sheet",
+    "wallet": "Wallet",
+    "analytics": "Analytics"
   },
   "dashboard": {
     "title": "Dashboard",
