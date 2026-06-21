@@ -1,32 +1,25 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "numReplicas": 1,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
-  },
   "services": [
     {
       "name": "api",
-      "buildCommand": "cd backend/api && pip install -r requirements.txt",
-      "startCommand": "cd backend/api && uvicorn app.main:app --host 0.0.0.0 --port $PORT",
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "Dockerfile.api",
       "healthcheckPath": "/health",
       "healthcheckTimeout": 100
     },
     {
       "name": "admin",
-      "buildCommand": "cd admin && npm install && npm run build",
-      "startCommand": "cd admin && npm start",
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "Dockerfile.admin",
       "healthcheckPath": "/",
       "healthcheckTimeout": 100
     },
     {
       "name": "worker",
-      "buildCommand": "cd backend/api && pip install -r requirements.txt",
-      "startCommand": "cd backend/api && python -m app.worker"
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "Dockerfile.api",
+      "startCommand": "cd /app && python -m app.worker"
     }
   ]
 }
