@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:swift_egypt_shared/swift_egypt_shared.dart';
 import '../services/api_service.dart';
 import '../services/sync_service.dart';
+import '../utils/error_handler.dart';
 
 class TaskProvider extends ChangeNotifier {
   List<BatchOrder> _tasks = [];
@@ -53,9 +54,9 @@ class TaskProvider extends ChangeNotifier {
           : <BatchOrder>[];
       _tasks = list;
     } on ApiError catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
     } catch (e) {
-      _error = 'حدث خطأ في تحميل المهام';
+      _error = ErrorHandler.getMessage(e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -83,9 +84,9 @@ class TaskProvider extends ChangeNotifier {
         _selectedTask = orders.where((t) => t.id == orderId).firstOrNull;
       }
     } on ApiError catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
     } catch (e) {
-      _error = 'حدث خطأ في تحميل تفاصيل الطلب';
+      _error = ErrorHandler.getMessage(e);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -149,11 +150,11 @@ class TaskProvider extends ChangeNotifier {
       await loadStats();
       return true;
     } on ApiError catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
       notifyListeners();
       return false;
     } catch (e) {
-      _error = 'حدث خطأ في تحديث الحالة';
+      _error = ErrorHandler.getMessage(e);
       notifyListeners();
       return false;
     }
@@ -169,11 +170,11 @@ class TaskProvider extends ChangeNotifier {
       await loadTodayTasks();
       return true;
     } on ApiError catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
       notifyListeners();
       return false;
     } catch (e) {
-      _error = 'حدث خطأ في إنهاء اليوم';
+      _error = ErrorHandler.getMessage(e);
       notifyListeners();
       return false;
     }

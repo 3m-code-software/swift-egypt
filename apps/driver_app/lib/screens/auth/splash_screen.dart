@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
@@ -20,6 +21,16 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkAuth() async {
     await Future.delayed(const Duration(milliseconds: 800));
     if (!mounted) return;
+
+    const storage = FlutterSecureStorage();
+    final onboardingDone = await storage.read(key: 'driver_onboarding_completed');
+    if (!mounted) return;
+
+    if (onboardingDone != 'true') {
+      Navigator.of(context).pushReplacementNamed('/onboarding');
+      return;
+    }
+
     final auth = context.read<AuthProvider>();
     await auth.tryAutoLogin();
     if (!mounted) return;

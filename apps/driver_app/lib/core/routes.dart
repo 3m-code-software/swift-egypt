@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/auth/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/tasks/task_list_screen.dart';
@@ -8,6 +9,7 @@ import '../screens/delivery/status_update_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/activity/activity_log_screen.dart';
 import '../screens/ai/ai_chat_screen.dart';
+import '../screens/support/help_screen.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -15,13 +17,16 @@ class AppRoutes {
   static const String taskList = '/tasks';
   static const String taskDetail = '/task/detail';
   static const String taskNavigation = '/task/navigation';
-
   static const String profile = '/profile';
   static const String activityLog = '/activity';
   static const String aiChat = '/ai-chat';
+  static const String onboarding = '/onboarding';
+  static const String help = '/help';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case onboarding:
+        return MaterialPageRoute(builder: (_) => const OnboardingScreen());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case home:
@@ -51,6 +56,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ActivityLogScreen());
       case aiChat:
         return MaterialPageRoute(builder: (_) => const AiChatScreen());
+      case help:
+        return MaterialPageRoute(builder: (_) => const HelpScreen());
       default:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
     }

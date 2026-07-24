@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:swift_egypt_shared/swift_egypt_shared.dart';
 import '../services/api_service.dart';
 import '../services/sync_service.dart';
+import '../utils/error_handler.dart';
 
 class NotificationItem {
   final String id;
@@ -45,7 +46,10 @@ class ShipmentProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String? _filterStatus;
+  String? _filterServiceType;
   String _searchQuery = '';
+  String _sortBy = 'newest';
+  bool _showAdvancedFilters = false;
 
   ShipmentProvider(this._api);
 
@@ -61,7 +65,10 @@ class ShipmentProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String? get filterStatus => _filterStatus;
+  String? get filterServiceType => _filterServiceType;
   String get searchQuery => _searchQuery;
+  String get sortBy => _sortBy;
+  bool get showAdvancedFilters => _showAdvancedFilters;
 
   List<Shipment> get _filteredShipments {
     var result = _shipments.toList();
@@ -85,10 +92,28 @@ class ShipmentProvider extends ChangeNotifier {
             .toList();
       }
     }
-    if (_searchQuery.isNotEmpty) {
+    if (_filterServiceType != null && _filterServiceType != 'all') {
       result = result
-          .where((s) => s.trackingNumber.contains(_searchQuery))
+          .where((s) => s.serviceType.name == _filterServiceType)
           .toList();
+    }
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      result = result
+          .where(
+            (s) =>
+                s.trackingNumber.toLowerCase().contains(q) ||
+                (s.senderName?.toLowerCase().contains(q) ?? false) ||
+                (s.recipientName?.toLowerCase().contains(q) ?? false) ||
+                s.pickupAddress.toLowerCase().contains(q) ||
+                s.deliveryAddress.toLowerCase().contains(q),
+          )
+          .toList();
+    }
+    if (_sortBy == 'newest') {
+      result.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } else if (_sortBy == 'oldest') {
+      result.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     }
     return result;
   }
@@ -98,8 +123,31 @@ class ShipmentProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setServiceTypeFilter(String? type) {
+    _filterServiceType = type;
+    notifyListeners();
+  }
+
   void setSearchQuery(String query) {
     _searchQuery = query;
+    notifyListeners();
+  }
+
+  void setSortBy(String sort) {
+    _sortBy = sort;
+    notifyListeners();
+  }
+
+  void toggleAdvancedFilters() {
+    _showAdvancedFilters = !_showAdvancedFilters;
+    notifyListeners();
+  }
+
+  void clearAllFilters() {
+    _filterStatus = null;
+    _filterServiceType = null;
+    _searchQuery = '';
+    _sortBy = 'newest';
     notifyListeners();
   }
 
@@ -117,9 +165,9 @@ class ShipmentProvider extends ChangeNotifier {
           .map((e) => Shipment.fromJson(e as Map<String, dynamic>))
           .toList();
     } on ApiException catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
     } catch (e) {
-      _error = 'حدث خطأ في تحميل الشحنات';
+      _error = ErrorHandler.getMessage(e);
     }
     _isLoading = false;
     notifyListeners();
@@ -137,9 +185,9 @@ class ShipmentProvider extends ChangeNotifier {
           .toList();
       _loadDocuments(id);
     } on ApiException catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
     } catch (e) {
-      _error = 'حدث خطأ في تحميل تفاصيل الشحنة';
+      _error = ErrorHandler.getMessage(e);
     }
     _isLoading = false;
     notifyListeners();
@@ -177,11 +225,15 @@ class ShipmentProvider extends ChangeNotifier {
       notifyListeners();
       return shipment.trackingNumber;
     } on ApiException catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
+      notifyListeners();
+      return null;
+    } on NetworkException {
+      _error = ErrorHandler.getMessage(NetworkException());
       notifyListeners();
       return null;
     } catch (e) {
-      _error = 'حدث خطأ في إنشاء الشحنة';
+      _error = ErrorHandler.getMessage(e);
       notifyListeners();
       return null;
     }
@@ -210,9 +262,9 @@ class ShipmentProvider extends ChangeNotifier {
           .map((e) => Invoice.fromJson(e as Map<String, dynamic>))
           .toList();
     } on ApiException catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
     } catch (e) {
-      _error = 'حدث خطأ في تحميل الفواتير';
+      _error = ErrorHandler.getMessage(e);
     }
     _isLoading = false;
     notifyListeners();
@@ -239,9 +291,9 @@ class ShipmentProvider extends ChangeNotifier {
       );
       await loadShipmentDetail(shipmentId);
     } on ApiException catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getMessage(e);
     } catch (e) {
-      _error = 'حدث خطأ في رفع المستند';
+      _error = ErrorHandler.getMessage(e);
     }
     _isLoading = false;
     notifyListeners();

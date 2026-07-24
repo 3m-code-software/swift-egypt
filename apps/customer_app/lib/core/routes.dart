@@ -3,6 +3,7 @@ import '../screens/ai/ai_chat_screen.dart';
 import '../screens/auth/forgot_password_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
+import '../screens/auth/onboarding_screen.dart';
 import '../screens/auth/splash_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/shipments/create_shipment_screen.dart';
@@ -15,6 +16,7 @@ import '../screens/payments/invoices_screen.dart';
 import '../screens/payments/payment_screen.dart';
 import '../screens/payments/payment_success_screen.dart';
 import '../screens/support/support_screen.dart';
+import '../screens/support/help_screen.dart';
 import '../screens/support/chat_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
@@ -41,6 +43,8 @@ class AppRoutes {
   static const String paymentSuccess = '/payment-success';
   static const String aiChat = '/ai-chat';
   static const String forgotPassword = '/forgot-password';
+  static const String onboarding = '/onboarding';
+  static const String help = '/help';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final args = settings.arguments;
@@ -112,6 +116,10 @@ class AppRoutes {
         return _buildRoute(const AiChatScreen(), settings);
       case forgotPassword:
         return _buildRoute(const ForgotPasswordScreen(), settings);
+      case onboarding:
+        return _buildRoute(const OnboardingScreen(), settings);
+      case help:
+        return _buildRoute(const HelpScreen(), settings);
       default:
         return _buildRoute(const SplashScreen(), settings);
     }

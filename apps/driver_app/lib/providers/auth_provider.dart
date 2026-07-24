@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:swift_egypt_shared/swift_egypt_shared.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../utils/error_handler.dart';
 
 enum AuthStatus { uninitialized, authenticated, unauthenticated, loading }
 
@@ -51,12 +52,12 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } on ApiError catch (e) {
-      _error = e.message;
+      _error = ErrorHandler.getAuthError(e.message);
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return false;
     } catch (e) {
-      _error = 'حدث خطأ في الاتصال. حاول مرة أخرى.';
+      _error = ErrorHandler.getMessage(e);
       _status = AuthStatus.unauthenticated;
       notifyListeners();
       return false;

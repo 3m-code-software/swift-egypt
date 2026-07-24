@@ -59,28 +59,39 @@ class AIService:
         if not api_key:
             return "عذراً، لم يتم تكوين مفتاح المساعد الذكي بعد."
 
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                resp = await client.post(
-                    OPENROUTER_URL,
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "HTTP-Referer": settings.openrouter_site_url,
-                        "X-Title": settings.openrouter_site_name,
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": "openai/gpt-4o-mini",
-                        "messages": messages,
-                        "max_tokens": 500,
-                        "temperature": 0.7,
-                    },
-                )
-                resp.raise_for_status()
-                data = resp.json()
-                return data["choices"][0]["message"]["content"]
-        except Exception as e:
-            return f"عذراً، حدث خطأ في الاتصال بالمساعد الذكي: {str(e)}"
+        models_to_try = [
+            "openai/gpt-4o-mini",
+            "google/gemini-2.0-flash-001",
+            "mistralai/mistral-7b-instruct:free",
+            "meta-llama/llama-3-8b-instruct:free",
+        ]
+
+        for model in models_to_try:
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    resp = await client.post(
+                        OPENROUTER_URL,
+                        headers={
+                            "Authorization": f"Bearer {api_key}",
+                            "HTTP-Referer": settings.openrouter_site_url,
+                            "X-Title": settings.openrouter_site_name,
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "model": model,
+                            "messages": messages,
+                            "max_tokens": 500,
+                            "temperature": 0.7,
+                        },
+                    )
+                    resp.raise_for_status()
+                    data = resp.json()
+                    if "choices" in data and data["choices"]:
+                        return data["choices"][0]["message"]["content"]
+            except Exception:
+                continue
+
+        return "عذراً، المساعد الذكي غير متاح حالياً. حاول مرة أخرى لاحقاً."
 
     async def _build_context(self, role: str, context: dict) -> str:
         parts = []

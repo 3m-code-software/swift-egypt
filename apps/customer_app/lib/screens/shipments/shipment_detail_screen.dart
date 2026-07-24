@@ -7,6 +7,8 @@ import '../../core/routes.dart';
 import '../../providers/shipment_provider.dart';
 import '../../widgets/status_timeline.dart';
 import '../../widgets/loading_widget.dart';
+import '../../widgets/delivery_rating_dialog.dart';
+import '../../services/api_service.dart';
 
 class ShipmentDetailScreen extends StatefulWidget {
   final String shipmentId;
@@ -23,6 +25,33 @@ class _ShipmentDetailScreenState extends State<ShipmentDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ShipmentProvider>().loadShipmentDetail(widget.shipmentId);
     });
+  }
+
+  Future<void> _submitRating(int rating, String? comment) async {
+    try {
+      final api = ApiService();
+      await api.post('/shipments/${widget.shipmentId}/rating', body: {
+        'rating': rating,
+        'comment': comment,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('شكراً لتقييمك!'),
+            backgroundColor: AppTheme.accentGreen,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم حفظ التقييم'),
+            backgroundColor: AppTheme.accentGreen,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -194,6 +223,22 @@ class _ShipmentDetailScreenState extends State<ShipmentDetailScreen> {
                 label: const Text('تتبع الشحنة'),
               ),
             ),
+            if (shipment.status == ShipmentStatus.delivered) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => DeliveryRatingDialog.show(
+                    context,
+                    shipmentId: widget.shipmentId,
+                    driverName: shipment.recipientName,
+                    onSubmit: _submitRating,
+                  ),
+                  icon: const Icon(Icons.star_outline),
+                  label: const Text('قيّم تجربة التوصيل'),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
           ],
         ),
